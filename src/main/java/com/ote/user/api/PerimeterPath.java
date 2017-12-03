@@ -1,6 +1,7 @@
 package com.ote.user.api;
 
 import com.ote.user.api.model.Perimeter;
+import com.ote.user.api.model.Privilege;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -40,7 +41,33 @@ public final class PerimeterPath {
                 collect(Collectors.joining("/"));
     }
 
-    public Optional<Perimeter> getPerimeterFromPath(final List<Perimeter> perimeters) {
+    public List<Privilege> getPrivileges(final List<Perimeter> perimeters) {
+
+        List<Privilege> privileges = new ArrayList<>();
+
+        List<Perimeter> perimetersToSearch = new ArrayList<>();
+        perimetersToSearch.addAll(perimeters);
+
+        for (String element : perimeterPath) {
+            Optional<Perimeter> perimeter = perimetersToSearch.stream().filter(p -> Objects.equals(p.getCode(), element)).findAny();
+            if (perimeter.isPresent()) {
+                privileges.addAll(perimeter.get().getPrivileges());
+                perimetersToSearch = perimeter.get().getChildren();
+            } else {
+                perimeter = perimetersToSearch.stream().filter(p -> p.isAll()).findAny();
+                if (perimeter.isPresent()) {
+                    privileges.addAll(perimeter.get().getPrivileges());
+                    perimetersToSearch = perimeter.get().getChildren();
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return privileges;
+    }
+
+ /*   public Optional<Perimeter> getPerimeterFromPath(final List<Perimeter> perimeters) {
 
         List<Perimeter> perimetersToSearch = new ArrayList<>();
         perimetersToSearch.addAll(perimeters);
@@ -55,5 +82,5 @@ public final class PerimeterPath {
             }
         }
         return perimeter;
-    }
+    }*/
 }

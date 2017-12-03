@@ -4,7 +4,7 @@ import com.ote.JsonUtils;
 import com.ote.user.api.IUserRightsService;
 import com.ote.user.api.PerimeterPath;
 import com.ote.user.api.exception.ApplicationNotFoundException;
-import com.ote.user.api.exception.PerimeterPathNotFoundException;
+import com.ote.user.api.exception.RoleNotFoundException;
 import com.ote.user.api.exception.UserNotFoundException;
 import com.ote.user.api.model.*;
 import com.ote.user.business.UserRightsService;
@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class UserDomainTest {
@@ -69,14 +70,16 @@ public class UserDomainTest {
     @Test
     public void testUserNotFoundException() {
 
-        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
-        userRights.getPerimeters().add(new Perimeter("Deal"));
-
         UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
-        userRightsRepositoryMock.getUserRightsList().add(userRights);
         IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
-        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges("NONE", "SLA", PerimeterPath.builder().startsWith("Deal").build())).
+        User user = new User("rene.barjavel");
+        Application application = new Application("SLA");
+        UserRights userRights = new UserRights(user, application);
+        userRights.getPerimeters().add(new Perimeter("Deal"));
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges(new User("NONE"), new Application("SLA"), PerimeterPath.builder().startsWith("Deal").build())).
                 isInstanceOf(UserNotFoundException.class);
 
     }
@@ -84,37 +87,47 @@ public class UserDomainTest {
     @Test
     public void testApplicationNotFoundException() {
 
-        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
-        userRights.getPerimeters().add(new Perimeter("Deal"));
-
         UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
-        userRightsRepositoryMock.getUserRightsList().add(userRights);
         IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
-        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges("rene.barjavel", "NONE", PerimeterPath.builder().startsWith("Deal").build())).
+        User user = new User("rene.barjavel");
+        Application application = new Application("SLA");
+        UserRights userRights = new UserRights(user, application);
+        userRights.getPerimeters().add(new Perimeter("Deal"));
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges(new User("rene.barjavel"), new Application("NONE"), PerimeterPath.builder().startsWith("Deal").build())).
                 isInstanceOf(ApplicationNotFoundException.class);
     }
 
     @Test
     public void testApplicationNotFoundExceptionForUser() {
 
-        UserRights userRights1 = new UserRights(new User("rene.barjavel"), new Application("GLE"));
-        userRights1.getPerimeters().add(new Perimeter("Deal"));
-
-        UserRights userRights2 = new UserRights(new User("bernard.werber"), new Application("SLA"));
-        userRights2.getPerimeters().add(new Perimeter("Deal"));
-
         UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
-        userRightsRepositoryMock.getUserRightsList().add(userRights1);
-        userRightsRepositoryMock.getUserRightsList().add(userRights2);
         IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
-        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges("rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build())).
-                isInstanceOf(ApplicationNotFoundException.class);
+        User user = new User("rene.barjavel");
+        Application application = new Application("GLE");
+        UserRights userRights = new UserRights(user, application);
+        userRights.getPerimeters().add(new Perimeter("Deal"));
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+        user = new User("bernard.werber");
+        application = new Application("SLA");
+        userRights = new UserRights(user, application);
+        userRights.getPerimeters().add(new Perimeter("Deal"));
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+
+        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges(new User("rene.barjavel"), new Application("SLA"), PerimeterPath.builder().startsWith("Deal").build())).
+                isInstanceOf(RoleNotFoundException.class);
     }
 
     @Test
     public void testPerimeterPathIsNotDefinedForAnApplication() {
+
+        UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
+        IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
         UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         Perimeter dealPerimeter = new Perimeter("Deal");
@@ -124,13 +137,23 @@ public class UserDomainTest {
         dealPerimeter.getPrivileges().add(new Privilege("ReadOnly"));
         userRights.getPerimeters().add(dealPerimeter);
 
-        UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
         userRightsRepositoryMock.getUserRightsList().add(userRights);
 
+        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges(new User("rene.barjavel"), new Application("SLA"), PerimeterPath.builder().startsWith("NONE").then("NONE").build())).
+                isInstanceOf(RoleNotFoundException.class);
+    }
+
+    @Test
+    public void testRoleIsNotDefinedForAUserAndAnApplication() {
+
+        UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
         IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
-        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges("rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("NONE").build())).
-                isInstanceOf(PerimeterPathNotFoundException.class);
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+        Assertions.assertThatThrownBy(() -> userRightsService.getPrivileges(new User("rene.barjavel"), new Application("SLA"), PerimeterPath.builder().startsWith("NONE").then("NONE").build())).
+                isInstanceOf(RoleNotFoundException.class);
     }
 
     @Test
@@ -152,16 +175,16 @@ public class UserDomainTest {
         SoftAssertions assertions = new SoftAssertions();
 
         // Check with path Deal
-        List<Privilege> privilegeList = userRightsService.getPrivileges("rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
+        List<Privilege> privilegeList = userRightsService.getPrivileges(new User("rene.barjavel"), new Application("SLA"), PerimeterPath.builder().startsWith("Deal").build());
         assertions.assertThat(privilegeList).isNotEmpty();
         assertions.assertThat(privilegeList).hasSize(1);
         assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadOnly");
 
         // Check with path Deal/GLE
-        privilegeList = userRightsService.getPrivileges("rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        privilegeList = userRightsService.getPrivileges(new User("rene.barjavel"), new Application("SLA"), PerimeterPath.builder().startsWith("Deal").then("GLE").build());
         assertions.assertThat(privilegeList).isNotEmpty();
-        assertions.assertThat(privilegeList).hasSize(1);
-        assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadWrite");
+        assertions.assertThat(privilegeList).hasSize(2);
+        assertions.assertThat(privilegeList.stream().map(p -> p.getCode()).collect(Collectors.toList())).contains("ReadWrite");
 
         assertions.assertAll();
     }
@@ -185,20 +208,63 @@ public class UserDomainTest {
         SoftAssertions assertions = new SoftAssertions();
 
         // Check with path Deal
-        boolean hasPrivilege = userRightsService.hasPrivilege("ReadOnly", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
-        assertions.assertThat(hasPrivilege).isTrue();
+        boolean hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadOnly"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").build());
+        assertions.assertThat(hasPrivilege).as("check ReadOnly for Deal").isTrue();
 
-        hasPrivilege = userRightsService.hasPrivilege("ReadWrite", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
-        assertions.assertThat(hasPrivilege).isFalse();
+        hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadWrite"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").build());
+        assertions.assertThat(hasPrivilege).as("check ReadWrite for Deal").isFalse();
 
         // Check with path Deal/GLE
-        hasPrivilege = userRightsService.hasPrivilege("ReadOnly", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
-        assertions.assertThat(hasPrivilege).isFalse();
+        hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadOnly"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        assertions.assertThat(hasPrivilege).as("check ReadOnly for Deal/GLE").isTrue();
 
-        hasPrivilege = userRightsService.hasPrivilege("ReadWrite", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
-        assertions.assertThat(hasPrivilege).isTrue();
+        hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadWrite"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        assertions.assertThat(hasPrivilege).as("check ReadWrite for Deal").isTrue();
 
         assertions.assertAll();
     }
 
+
+    @Test
+    public void checkAllPerimeters() throws Exception {
+
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
+        Perimeter dealPerimeter = new Perimeter("ALL", true);
+        Perimeter glePerimeter = new Perimeter("GLE");
+        glePerimeter.getPrivileges().add(new Privilege("ReadWrite"));
+        dealPerimeter.getChildren().add(glePerimeter);
+        dealPerimeter.getPrivileges().add(new Privilege("ReadOnly"));
+        userRights.getPerimeters().add(dealPerimeter);
+
+        UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+        IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
+
+        SoftAssertions assertions = new SoftAssertions();
+
+        // Check with path Deal
+        boolean hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadOnly"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").build());
+        assertions.assertThat(hasPrivilege).as("check ReadOnly for Deal").isTrue();
+
+        hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadWrite"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").build());
+        assertions.assertThat(hasPrivilege).as("check ReadWrite for Deal").isFalse();
+
+        // Check with path Deal/GLE
+        hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadOnly"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        assertions.assertThat(hasPrivilege).as("check ReadOnly for Deal/GLE").isTrue();
+
+        hasPrivilege = userRightsService.hasPrivilege(new Privilege("ReadWrite"), new User("rene.barjavel"), new Application("SLA"),
+                PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        assertions.assertThat(hasPrivilege).as("check ReadWrite for Deal").isTrue();
+
+        assertions.assertAll();
+    }
 }
