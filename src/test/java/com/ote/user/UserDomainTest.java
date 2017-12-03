@@ -22,6 +22,25 @@ import java.util.List;
 public class UserDomainTest {
 
     @Test
+    public void testPerimeterPath() {
+
+        PerimeterPath path = PerimeterPath.builder();
+
+        SoftAssertions assertions = new SoftAssertions();
+
+        path = path.startsWith("Deal").build();
+        assertions.assertThat(path.toString()).isEqualTo("Deal");
+
+        path = path.startsWith("Deal").then("GLE").build();
+        assertions.assertThat(path.toString()).isEqualTo("Deal/GLE");
+
+        path = path.startsWith("Deal").then("GLE").then("Dash").build();
+        assertions.assertThat(path.toString()).isEqualTo("Deal/GLE/Dash");
+
+        assertions.assertAll();
+    }
+
+    @Test
     public void testUserRightStructure() throws IOException {
 
         UserRights userRights = new UserRights("rene.barjavel", "SLA");
@@ -132,17 +151,21 @@ public class UserDomainTest {
 
         IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
+        SoftAssertions assertions = new SoftAssertions();
+
         // Check with path Deal
         List<Privilege> privilegeList = userRightsService.getPrivileges("rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
-        Assertions.assertThat(privilegeList).isNotEmpty();
-        Assertions.assertThat(privilegeList).hasSize(1);
-        Assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadOnly");
+        assertions.assertThat(privilegeList).isNotEmpty();
+        assertions.assertThat(privilegeList).hasSize(1);
+        assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadOnly");
 
         // Check with path Deal/GLE
         privilegeList = userRightsService.getPrivileges("rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
-        Assertions.assertThat(privilegeList).isNotEmpty();
-        Assertions.assertThat(privilegeList).hasSize(1);
-        Assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadWrite");
+        assertions.assertThat(privilegeList).isNotEmpty();
+        assertions.assertThat(privilegeList).hasSize(1);
+        assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadWrite");
+
+        assertions.assertAll();
     }
 
     @Test
@@ -161,19 +184,23 @@ public class UserDomainTest {
 
         IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
 
+        SoftAssertions assertions = new SoftAssertions();
+
         // Check with path Deal
         boolean hasPrivilege = userRightsService.hasPrivilege("ReadOnly", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
-        Assertions.assertThat(hasPrivilege).isTrue();
+        assertions.assertThat(hasPrivilege).isTrue();
 
         hasPrivilege = userRightsService.hasPrivilege("ReadWrite", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
-        Assertions.assertThat(hasPrivilege).isFalse();
+        assertions.assertThat(hasPrivilege).isFalse();
 
         // Check with path Deal/GLE
         hasPrivilege = userRightsService.hasPrivilege("ReadOnly", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
-        Assertions.assertThat(hasPrivilege).isFalse();
+        assertions.assertThat(hasPrivilege).isFalse();
 
         hasPrivilege = userRightsService.hasPrivilege("ReadWrite", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
-        Assertions.assertThat(hasPrivilege).isTrue();
+        assertions.assertThat(hasPrivilege).isTrue();
+
+        assertions.assertAll();
     }
 
 }

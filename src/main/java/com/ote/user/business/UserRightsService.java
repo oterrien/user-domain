@@ -7,7 +7,6 @@ import com.ote.user.api.exception.PerimeterPathNotFoundException;
 import com.ote.user.api.exception.UserNotFoundException;
 import com.ote.user.api.model.Privilege;
 import com.ote.user.spi.IUserRightsRepository;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

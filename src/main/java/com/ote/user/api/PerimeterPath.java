@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PerimeterPath {
@@ -37,14 +36,8 @@ public final class PerimeterPath {
 
     @Override
     public String toString() {
-
-        return IntStream.range(0, perimeterPath.size() - 1).
-                mapToObj(i -> perimeterPath.get(i)).
-                map(p -> p + "/").
-                collect(Collectors.joining("/"))
-                +
-                perimeterPath.get(perimeterPath.size() - 1);
-
+        return perimeterPath.stream().
+                collect(Collectors.joining("/"));
     }
 
     public Optional<Perimeter> getPerimeterFromPath(final List<Perimeter> perimeters) {
