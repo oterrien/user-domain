@@ -36,6 +36,9 @@ public class UserDomainTest {
         path = path.startsWith("Deal").then("GLE").then("Dash").build();
         assertions.assertThat(path.toString()).isEqualTo("Deal/GLE/Dash");
 
+        path = path.startsWith("Deal").then("GLE", "Dash", "LGE").build();
+        assertions.assertThat(path.toString()).isEqualTo("Deal/GLE/Dash/LGE");
+
         assertions.assertAll();
     }
 

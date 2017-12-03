@@ -14,5 +14,5 @@ public interface IUserRightsRepository {
 
     boolean isRoleDefined(User user, Application application);
 
-    List<Perimeter> getPrivileges(User user, Application application);
+    List<Perimeter> getPerimeters(User user, Application application);
 }

@@ -33,7 +33,7 @@ public class UserRightsRepositoryMock implements IUserRightsRepository {
     }
 
     @Override
-    public List<Perimeter> getPrivileges(User user, Application application) {
+    public List<Perimeter> getPerimeters(User user, Application application) {
         Optional<UserRights> userRights = userRightsList.stream().
                 filter(p -> Objects.equals(p.getUser().getLogin(), user.getLogin())).
                 filter(p -> Objects.equals(p.getApplication().getCode(), application.getCode())).

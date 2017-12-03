@@ -1,18 +1,14 @@
 package com.ote.user.api;
 
-import com.ote.user.api.model.Perimeter;
-import com.ote.user.api.model.Privilege;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PerimeterPath {
+public final class PerimeterPath implements Iterable<String> {
 
     private List<String> perimeterPath;
 
@@ -26,8 +22,9 @@ public final class PerimeterPath {
         return this;
     }
 
-    public PerimeterPath then(String perimeter) {
+    public PerimeterPath then(String perimeter, String... otherPerimeter) {
         perimeterPath.add(perimeter);
+        perimeterPath.addAll(Arrays.asList(otherPerimeter));
         return this;
     }
 
@@ -41,46 +38,8 @@ public final class PerimeterPath {
                 collect(Collectors.joining("/"));
     }
 
-    public List<Privilege> getPrivileges(final List<Perimeter> perimeters) {
-
-        List<Privilege> privileges = new ArrayList<>();
-
-        List<Perimeter> perimetersToSearch = new ArrayList<>();
-        perimetersToSearch.addAll(perimeters);
-
-        for (String element : perimeterPath) {
-            Optional<Perimeter> perimeter = perimetersToSearch.stream().filter(p -> Objects.equals(p.getCode(), element)).findAny();
-            if (perimeter.isPresent()) {
-                privileges.addAll(perimeter.get().getPrivileges());
-                perimetersToSearch = perimeter.get().getChildren();
-            } else {
-                perimeter = perimetersToSearch.stream().filter(p -> p.isAll()).findAny();
-                if (perimeter.isPresent()) {
-                    privileges.addAll(perimeter.get().getPrivileges());
-                    perimetersToSearch = perimeter.get().getChildren();
-                } else {
-                    break;
-                }
-            }
-        }
-
-        return privileges;
+    @Override
+    public Iterator<String> iterator() {
+        return perimeterPath.iterator();
     }
-
- /*   public Optional<Perimeter> getPerimeterFromPath(final List<Perimeter> perimeters) {
-
-        List<Perimeter> perimetersToSearch = new ArrayList<>();
-        perimetersToSearch.addAll(perimeters);
-
-        Optional<Perimeter> perimeter = Optional.empty();
-        for (String element : perimeterPath) {
-            perimeter = perimetersToSearch.stream().filter(p -> Objects.equals(p.getCode(), element)).findAny();
-            if (perimeter.isPresent()) {
-                perimetersToSearch = perimeter.get().getChildren();
-            } else {
-                break;
-            }
-        }
-        return perimeter;
-    }*/
 }
