@@ -6,9 +6,7 @@ import com.ote.user.api.PerimeterPath;
 import com.ote.user.api.exception.ApplicationNotFoundException;
 import com.ote.user.api.exception.PerimeterPathNotFoundException;
 import com.ote.user.api.exception.UserNotFoundException;
-import com.ote.user.api.model.Perimeter;
-import com.ote.user.api.model.Privilege;
-import com.ote.user.api.model.UserRights;
+import com.ote.user.api.model.*;
 import com.ote.user.business.UserRightsService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -43,7 +41,7 @@ public class UserDomainTest {
     @Test
     public void testUserRightStructure() throws IOException {
 
-        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         Perimeter dealPerimeter = new Perimeter("Deal");
         Perimeter glePerimeter = new Perimeter("GLE");
         glePerimeter.getPrivileges().add(new Privilege("ReadWrite"));
@@ -53,8 +51,8 @@ public class UserDomainTest {
 
         SoftAssertions assertions = new SoftAssertions();
         assertions.assertThat(userRights).isNotNull();
-        assertions.assertThat(userRights.getUser()).isEqualTo("rene.barjavel");
-        assertions.assertThat(userRights.getApplication()).isEqualTo("SLA");
+        assertions.assertThat(userRights.getUser().getLogin()).isEqualTo("rene.barjavel");
+        assertions.assertThat(userRights.getApplication().getCode()).isEqualTo("SLA");
         assertions.assertThat(userRights.getPerimeters()).hasSize(1);
         assertions.assertThat(userRights.getPerimeters().get(0).getCode()).isEqualTo("Deal");
         assertions.assertThat(userRights.getPerimeters().get(0).getPrivileges()).hasSize(1);
@@ -71,7 +69,7 @@ public class UserDomainTest {
     @Test
     public void testUserNotFoundException() {
 
-        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         userRights.getPerimeters().add(new Perimeter("Deal"));
 
         UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
@@ -86,7 +84,7 @@ public class UserDomainTest {
     @Test
     public void testApplicationNotFoundException() {
 
-        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         userRights.getPerimeters().add(new Perimeter("Deal"));
 
         UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
@@ -100,10 +98,10 @@ public class UserDomainTest {
     @Test
     public void testApplicationNotFoundExceptionForUser() {
 
-        UserRights userRights1 = new UserRights("rene.barjavel", "GLE");
+        UserRights userRights1 = new UserRights(new User("rene.barjavel"), new Application("GLE"));
         userRights1.getPerimeters().add(new Perimeter("Deal"));
 
-        UserRights userRights2 = new UserRights("bernard.werber", "SLA");
+        UserRights userRights2 = new UserRights(new User("bernard.werber"), new Application("SLA"));
         userRights2.getPerimeters().add(new Perimeter("Deal"));
 
         UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
@@ -118,7 +116,7 @@ public class UserDomainTest {
     @Test
     public void testPerimeterPathIsNotDefinedForAnApplication() {
 
-        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         Perimeter dealPerimeter = new Perimeter("Deal");
         Perimeter glePerimeter = new Perimeter("GLE");
         glePerimeter.getPrivileges().add(new Privilege("ReadWrite"));
@@ -138,7 +136,7 @@ public class UserDomainTest {
     @Test
     public void testPerimeterPathIsDefinedForAnApplication() throws Exception {
 
-        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         Perimeter dealPerimeter = new Perimeter("Deal");
         Perimeter glePerimeter = new Perimeter("GLE");
         glePerimeter.getPrivileges().add(new Privilege("ReadWrite"));
@@ -171,7 +169,7 @@ public class UserDomainTest {
     @Test
     public void checkUserPrivilege() throws Exception {
 
-        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        UserRights userRights = new UserRights(new User("rene.barjavel"), new Application("SLA"));
         Perimeter dealPerimeter = new Perimeter("Deal");
         Perimeter glePerimeter = new Perimeter("GLE");
         glePerimeter.getPrivileges().add(new Privilege("ReadWrite"));

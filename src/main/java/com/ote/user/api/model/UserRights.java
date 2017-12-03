@@ -10,7 +10,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserRights {
 
-    private final String user;
-    private final String application;
+    private final User user;
+    private final Application application;
     private final List<Perimeter> perimeters = new ArrayList<>();
 }
