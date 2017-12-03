@@ -145,4 +145,35 @@ public class UserDomainTest {
         Assertions.assertThat(privilegeList.get(0).getCode()).isEqualTo("ReadWrite");
     }
 
+    @Test
+    public void checkUserPrivilege() throws Exception {
+
+        UserRights userRights = new UserRights("rene.barjavel", "SLA");
+        Perimeter dealPerimeter = new Perimeter("Deal");
+        Perimeter glePerimeter = new Perimeter("GLE");
+        glePerimeter.getPrivileges().add(new Privilege("ReadWrite"));
+        dealPerimeter.getChildren().add(glePerimeter);
+        dealPerimeter.getPrivileges().add(new Privilege("ReadOnly"));
+        userRights.getPerimeters().add(dealPerimeter);
+
+        UserRightsRepositoryMock userRightsRepositoryMock = new UserRightsRepositoryMock();
+        userRightsRepositoryMock.getUserRightsList().add(userRights);
+
+        IUserRightsService userRightsService = new UserRightsService(userRightsRepositoryMock);
+
+        // Check with path Deal
+        boolean hasPrivilege = userRightsService.hasPrivilege("ReadOnly", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
+        Assertions.assertThat(hasPrivilege).isTrue();
+
+        hasPrivilege = userRightsService.hasPrivilege("ReadWrite", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").build());
+        Assertions.assertThat(hasPrivilege).isFalse();
+
+        // Check with path Deal/GLE
+        hasPrivilege = userRightsService.hasPrivilege("ReadOnly", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        Assertions.assertThat(hasPrivilege).isFalse();
+
+        hasPrivilege = userRightsService.hasPrivilege("ReadWrite", "rene.barjavel", "SLA", PerimeterPath.builder().startsWith("Deal").then("GLE").build());
+        Assertions.assertThat(hasPrivilege).isTrue();
+    }
+
 }

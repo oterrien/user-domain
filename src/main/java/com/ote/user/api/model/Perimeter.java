@@ -1,12 +1,12 @@
 package com.ote.user.api.model;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
 @RequiredArgsConstructor
 public class Perimeter {
 

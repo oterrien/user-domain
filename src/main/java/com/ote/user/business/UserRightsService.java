@@ -11,10 +11,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.management.relation.RoleInfoNotFoundException;
 import java.util.List;
 
-@Data
 @Slf4j
 @RequiredArgsConstructor
 public class UserRightsService implements IUserRightsService {
@@ -36,7 +34,7 @@ public class UserRightsService implements IUserRightsService {
             throw new ApplicationNotFoundException(user, application);
         }
 
-        if (!userRightsRepository.isPerimeterPathDefined(application, perimeterPath)){
+        if (!userRightsRepository.isPerimeterPathDefined(application, perimeterPath)) {
             throw new PerimeterPathNotFoundException(application, perimeterPath);
         }
 

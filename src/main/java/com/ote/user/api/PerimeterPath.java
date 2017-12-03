@@ -2,17 +2,18 @@ package com.ote.user.api;
 
 import com.ote.user.api.model.Perimeter;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PerimeterPath {
 
-    @Getter
     private List<String> perimeterPath;
 
     public static PerimeterPath builder() {
@@ -32,10 +33,6 @@ public final class PerimeterPath {
 
     public PerimeterPath build() {
         return this;
-    }
-
-    public boolean isEmpty() {
-        return perimeterPath.isEmpty();
     }
 
     @Override

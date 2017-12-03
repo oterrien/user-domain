@@ -1,9 +1,9 @@
 package com.ote.user.api.model;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Data
+@Getter
 @RequiredArgsConstructor
 public class Privilege {
 
