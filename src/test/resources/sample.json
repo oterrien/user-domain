@@ -1,0 +1,28 @@
+{
+  "user": {
+    "login": "olivier.terrien"
+  },
+  "application": {
+    "code": "SLA"
+  },
+  "perimeters": [
+    {
+      "code": "Deal",
+      "privileges": [
+        {
+          "code": "ReadOnly"
+        }
+      ],
+      "children": [
+        {
+          "code": "GLE",
+          "privileges": [
+            {
+              "code": "ReadWrite"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
